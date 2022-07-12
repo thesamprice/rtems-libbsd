@@ -371,7 +371,7 @@ init_casper(void)
 }
 
 int
-main(int argc, char *argv[])
+main_dummy(int argc, char *argv[])
 {
 	u_int			 capmode;
 	int			 ch, fd, quiet = 0, i = 0;
