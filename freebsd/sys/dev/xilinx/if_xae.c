@@ -372,7 +372,7 @@ xae_stat(struct xae_softc *sc, int counter_id)
 	KASSERT(counter_id < XAE_MAX_COUNTERS,
 		("counter %d is out of range", counter_id));
 
-	new = READ8(sc, XAE_STATCNT(counter_id));
+	new = READ4(sc, XAE_STATCNT(counter_id));
 	old = sc->counters[counter_id];
 
 	if (new >= old)
