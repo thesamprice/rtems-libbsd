@@ -73,10 +73,15 @@ __FBSDID("$FreeBSD$");
 #define	WRITE4(_sc, _reg, _val) \
 	bus_write_4((_sc)->res[0], _reg, _val)
 
-#define	READ8(_sc, _reg) \
-	bus_read_8((_sc)->res[0], _reg)
-#define	WRITE8(_sc, _reg, _val) \
-	bus_write_8((_sc)->res[0], _reg, _val)
+inline uint64_t READ8(const struct xae_softc *sc, size_t offset){
+	uint64_t output64;
+	uint32_t * out_32 = (uint64_t *) &output64;
+	out_32[0] = *(volatile uint32_t*)(sc->res[0]->r_bushandle + offset + 0);
+	out_32[1] = *(volatile uint32_t*)(sc->res[0]->r_bushandle + offset + 4);
+	return output64;
+}
+// #define	READ8(_sc, _reg) \
+// 	bus_read_8((_sc)->res[0], _reg)
 
 #define	XAE_LOCK(sc)			mtx_lock(&(sc)->mtx)
 #define	XAE_UNLOCK(sc)			mtx_unlock(&(sc)->mtx)
@@ -364,15 +369,16 @@ xae_stop_locked(struct xae_softc *sc)
 }
 
 static uint64_t
-xae_stat(struct xae_softc *sc, int counter_id)
+xae_stat(struct xae_softc *sc, unsigned int counter_id)
 {
 	uint64_t new, old;
+
 	uint64_t delta;
 
 	KASSERT(counter_id < XAE_MAX_COUNTERS,
 		("counter %d is out of range", counter_id));
-
-	new = READ4(sc, XAE_STATCNT(counter_id));
+	
+	new = READ8(sc, XAE_STATCNT(counter_id));
 	old = sc->counters[counter_id];
 
 	if (new >= old)
